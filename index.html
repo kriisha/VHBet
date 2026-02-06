@@ -8,14 +8,14 @@
     :root{--bg:#0b0d12;--text:#e9eefc;--muted:#a9b3cc;--line:#23304a;--card:#121826;--btn:#3b82f6;--btn2:#1f2937;--danger:#ef4444;--ok:#22c55e}
     *{box-sizing:border-box}
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:radial-gradient(900px 500px at 20% 0%, #152043 0%, var(--bg) 60%);color:var(--text)}
-    .wrap{max-width:1050px;margin:0 auto;padding:24px 16px 48px}
+    .wrap{max-width:1100px;margin:0 auto;padding:24px 16px 48px}
     h1{margin:0 0 6px;font-size:28px}
     .sub{margin:0;color:var(--muted)}
     .card{background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:16px}
     h2{margin:0 0 12px;font-size:18px}
     .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     .grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:16px}
-    @media (min-width: 900px){.grid{grid-template-columns:1fr 1fr}}
+    @media (min-width: 980px){.grid{grid-template-columns:1fr 1fr}}
     input, select{background:rgba(255,255,255,0.03);border:1px solid var(--line);color:var(--text);padding:10px 12px;border-radius:10px;outline:none;min-width:220px}
     input::placeholder{color:rgba(233,238,252,0.45)}
     button{border:0;background:var(--btn);color:#081024;font-weight:800;padding:10px 12px;border-radius:10px;cursor:pointer}
@@ -28,22 +28,36 @@
     .badge{font-size:12px;color:var(--muted)}
     .summary{margin-top:12px;padding:12px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,0.18)}
     .table{width:100%;border-collapse:collapse;margin-top:12px;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
-    .table th,.table td{padding:10px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}
+    .table th,.table td{padding:10px;border-bottom:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top}
     .table th{color:var(--muted);font-weight:800}
     .table tr:last-child td{border-bottom:0}
-    .pos{color:var(--ok);font-weight:800}
-    .neg{color:#fca5a5;font-weight:800}
     .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:999px;background:rgba(0,0,0,0.18)}
     .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
     .marketCard{margin-top:12px}
-    .btnOpt{white-space:nowrap}
+    .optGrid{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+    .optBtn{
+      min-width: 190px;
+      text-align:left;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,0.14);
+      color: var(--text);
+      cursor: pointer;
+    }
+    .optBtn:hover{filter:brightness(1.06)}
+    .optTop{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+    .optLabel{font-weight:900}
+    .optOdds{font-weight:900}
+    .optMeta{margin-top:6px;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:10px}
+    .ok{color:var(--ok);font-weight:800}
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
       <h1>Vrienden Bets Live</h1>
-      <p class="sub">Iedereen ziet dezelfde sessie en kan live keuzes plaatsen.</p>
+      <p class="sub">Iedereen ziet dezelfde sessie, live odds op basis van inzetten.</p>
     </header>
 
     <section class="card">
@@ -62,22 +76,21 @@
       </div>
 
       <p class="hint">
-        Deel de sessiecode met vrienden. Wie de code heeft kan joinen.
-        Tip: stuur een link met code in de URL.
+        Deel de sessiecode of deel de link, de code staat automatisch in de URL na create of join.
       </p>
     </section>
 
     <section class="card">
-      <h2>Jouw speler en pot</h2>
+      <h2>Jouw speler</h2>
       <div class="row">
         <select id="playerSelect">
           <option value="">Selecteer speler</option>
         </select>
-
-        <input id="pot" type="number" step="1" min="0" placeholder="Pot €" style="min-width:160px" />
-        <span class="tiny" id="potHint"></span>
+        <span class="tiny" id="playerHint"></span>
       </div>
-      <p class="hint">Selecteer je spelernaam en klik daarna op een keuze in een markt.</p>
+      <p class="hint">
+        Selecteer je speler, klik daarna op een optie en geef je inzet in.
+      </p>
     </section>
 
     <section class="grid">
@@ -88,7 +101,7 @@
           <button type="submit">Toevoegen</button>
         </form>
         <ul id="playerList" class="list"></ul>
-        <p class="hint">Iedereen kan spelers toevoegen. Verwijderen kan enkel door de maker.</p>
+        <p class="hint">Verwijderen kan enkel door de maker van die speler.</p>
       </div>
 
       <div class="card">
@@ -104,12 +117,13 @@
           <select id="marketPick" style="min-width:260px">
             <option value="">Kies markt om opties toe te voegen</option>
           </select>
-          <input id="optLabel" placeholder="Keuze label, bv 1 of X2" style="min-width:200px" />
-          <input id="optOdds" type="number" step="0.01" min="1.01" placeholder="Odds" style="min-width:140px" />
+          <input id="optLabel" placeholder="Keuze label, bv 1 of Team 1 wint" style="min-width:260px" />
           <button type="submit" class="secondary">Optie toevoegen</button>
         </form>
 
-        <p class="hint">Voorbeeld: maak markt Eindresultaat en voeg opties 1, X, 2 toe met odds.</p>
+        <p class="hint">
+          Odds worden niet meer manueel gezet, ze komen live uit de inzet verdeling.
+        </p>
       </div>
     </section>
 
@@ -119,7 +133,7 @@
     </section>
 
     <section class="card">
-      <h2>Overzicht keuzes</h2>
+      <h2>Overzicht inzetten</h2>
       <div id="selectionSummary" class="summary"></div>
       <div id="selectionTableWrap"></div>
     </section>
@@ -128,14 +142,13 @@
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-    // VERVANG DEZE 2 WAARDES
     const SUPABASE_URL = "https://cyctrlgnkurleyzqglgd.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5Y3RybGdua3VybGV5enFnbGdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0MDQyMDAsImV4cCI6MjA4NTk4MDIwMH0._U1IRle7-QRBW-sTjNAbP27gLfTVr_xz0FoyXu80NZ0";
 
     const STORAGE = {
       sessionCode: "vb_live_session_code",
-      pot: "vb_live_pot",
-      playerId: "vb_live_player_id"
+      playerId: "vb_live_player_id",
+      lastStake: "vb_live_last_stake"
     };
 
     const els = {
@@ -151,6 +164,7 @@
       playerName: document.getElementById("playerName"),
       playerList: document.getElementById("playerList"),
       playerSelect: document.getElementById("playerSelect"),
+      playerHint: document.getElementById("playerHint"),
 
       marketForm: document.getElementById("marketForm"),
       marketTitle: document.getElementById("marketTitle"),
@@ -159,12 +173,8 @@
       optionForm: document.getElementById("optionForm"),
       marketPick: document.getElementById("marketPick"),
       optLabel: document.getElementById("optLabel"),
-      optOdds: document.getElementById("optOdds"),
 
       marketsWrap: document.getElementById("marketsWrap"),
-
-      pot: document.getElementById("pot"),
-      potHint: document.getElementById("potHint"),
 
       selectionSummary: document.getElementById("selectionSummary"),
       selectionTableWrap: document.getElementById("selectionTableWrap"),
@@ -199,6 +209,18 @@
       return new Intl.NumberFormat("nl-BE", { style: "currency", currency: "EUR" }).format(n);
     }
 
+    function fmtOdds(n) {
+      if (!Number.isFinite(n)) return "∞";
+      const capped = Math.min(n, 99.99);
+      return capped.toFixed(2);
+    }
+
+    function setUrlCode(code) {
+      const url = new URL(location.href);
+      url.searchParams.set("code", code);
+      history.replaceState(null, "", url.toString());
+    }
+
     async function ensureAnonAuth() {
       const { data: s } = await supabase.auth.getSession();
       if (s?.session) return s.session;
@@ -210,7 +232,7 @@
     async function createSession() {
       const { data, error } = await supabase.rpc("create_session");
       if (error) throw error;
-      return data?.[0] || null; // { session_id, code }
+      return data?.[0] || null;
     }
 
     async function joinSession(code) {
@@ -218,13 +240,7 @@
       if (!c) throw new Error("No code");
       const { data, error } = await supabase.rpc("join_session", { p_code: c });
       if (error) throw error;
-      return data?.[0] || null; // { session_id, code }
-    }
-
-    function setUrlCode(code) {
-      const url = new URL(location.href);
-      url.searchParams.set("code", code);
-      history.replaceState(null, "", url.toString());
+      return data?.[0] || null;
     }
 
     function teardownRealtime() {
@@ -281,7 +297,7 @@
       }
 
       const s = await supabase.from("selections")
-        .select("*, players(name), market_options(label, odds), markets(title, match_label)")
+        .select("*, players(name), market_options(label), markets(title, match_label)")
         .eq("session_id", session.id)
         .order("created_at", { ascending: true });
       if (s.error) throw s.error;
@@ -303,6 +319,8 @@
 
       if (current) els.playerSelect.value = current;
       if (els.playerSelect.value) localStorage.setItem(STORAGE.playerId, els.playerSelect.value);
+
+      els.playerHint.textContent = els.playerSelect.value ? "Klik op een keuze om in te zetten" : "Selecteer eerst je speler";
     }
 
     function renderPlayersList() {
@@ -347,6 +365,85 @@
       }
     }
 
+    function getMarketStakeStats(marketId) {
+      const opts = optionsByMarket.get(marketId) || [];
+      const optionIds = new Set(opts.map(o => o.id));
+
+      const optionStake = new Map();
+      let total = 0;
+
+      for (const s of selections) {
+        if (s.market_id !== marketId) continue;
+        if (!optionIds.has(s.option_id)) continue;
+        const st = Number(s.stake || 0);
+        if (!Number.isFinite(st) || st <= 0) continue;
+        total += st;
+        optionStake.set(s.option_id, (optionStake.get(s.option_id) || 0) + st);
+      }
+
+      const n = opts.length || 1;
+
+      return { opts, totalStake: total, optionStake, nOptions: n };
+    }
+
+    function impliedOdds(totalStake, stakeOnOption, nOptions) {
+      if (nOptions <= 0) nOptions = 1;
+
+      if (!Number.isFinite(totalStake) || totalStake <= 0) {
+        return { prob: 1 / nOptions, odds: nOptions };
+      }
+
+      const st = Number(stakeOnOption || 0);
+      if (!Number.isFinite(st) || st <= 0) {
+        return { prob: 0, odds: Infinity };
+      }
+
+      const prob = st / totalStake;
+      const odds = 1 / prob;
+      return { prob, odds };
+    }
+
+    function askStake(defaultValue) {
+      const raw = prompt("Hoeveel wil je inzetten in euro", defaultValue);
+      if (raw === null) return null;
+      const v = parseFloat(String(raw).replace(",", "."));
+      if (!Number.isFinite(v) || v <= 0) return null;
+      return v;
+    }
+
+    async function placeOrUpdateSelection(marketId, optionId) {
+      const playerId = els.playerSelect.value;
+      if (!playerId) {
+        setStatus("Selecteer eerst je speler");
+        return;
+      }
+
+      const prev = localStorage.getItem(STORAGE.lastStake) || "5";
+      const stake = askStake(prev);
+      if (stake === null) {
+        setStatus("Ongeldige inzet");
+        return;
+      }
+      localStorage.setItem(STORAGE.lastStake, String(stake));
+
+      const user = (await supabase.auth.getUser()).data.user;
+
+      const payload = {
+        session_id: session.id,
+        market_id: marketId,
+        option_id: optionId,
+        player_id: playerId,
+        created_by: user.id,
+        stake: stake
+      };
+
+      const up = await supabase
+        .from("selections")
+        .upsert(payload, { onConflict: "market_id,player_id" });
+
+      if (up.error) setStatus("Kon inzet niet opslaan");
+    }
+
     function renderMarkets() {
       els.marketsWrap.innerHTML = "";
 
@@ -356,12 +453,13 @@
       }
 
       if (!markets.length) {
-        els.marketsWrap.innerHTML = "<p class='hint'>Maak een markt, bv Eindresultaat met opties 1 X 2.</p>";
+        els.marketsWrap.innerHTML = "<p class='hint'>Maak een markt en voeg opties toe, odds komen vanzelf.</p>";
         return;
       }
 
       for (const m of markets) {
-        const opts = optionsByMarket.get(m.id) || [];
+        const stats = getMarketStakeStats(m.id);
+        const { opts, totalStake, optionStake, nOptions } = stats;
 
         const card = document.createElement("div");
         card.className = "card marketCard";
@@ -371,7 +469,10 @@
         head.style.justifyContent = "space-between";
 
         const left = document.createElement("div");
-        left.innerHTML = "<strong>" + escapeHtml(m.title) + "</strong> <span class='badge'>" + escapeHtml(m.match_label || "") + "</span>";
+        const potTxt = totalStake > 0 ? money(totalStake) : "€0,00";
+        left.innerHTML =
+          "<div><strong>" + escapeHtml(m.title) + "</strong> <span class='badge'>" + escapeHtml(m.match_label || "") + "</span></div>" +
+          "<div class='tiny'>Pot in deze markt: <span class='ok'>" + potTxt + "</span> | Opties: " + nOptions + "</div>";
 
         const del = document.createElement("button");
         del.className = "secondary";
@@ -386,69 +487,48 @@
         head.appendChild(del);
         card.appendChild(head);
 
-        const row = document.createElement("div");
-        row.className = "row";
-        row.style.marginTop = "10px";
-
         if (!opts.length) {
           const h = document.createElement("p");
           h.className = "hint";
-          h.textContent = "Voeg opties toe zoals 1, X, 2 met odds.";
+          h.textContent = "Voeg opties toe aan deze markt.";
           card.appendChild(h);
         } else {
+          const grid = document.createElement("div");
+          grid.className = "optGrid";
+
           for (const o of opts) {
+            const st = optionStake.get(o.id) || 0;
+            const { prob, odds } = impliedOdds(totalStake, st, nOptions);
+
             const btn = document.createElement("button");
             btn.type = "button";
-            btn.className = "secondary btnOpt";
-            btn.textContent = o.label + "  " + Number(o.odds).toFixed(2);
-
+            btn.className = "optBtn";
             btn.addEventListener("click", async () => {
-              const playerId = els.playerSelect.value;
-              if (!playerId) {
-                setStatus("Selecteer eerst je speler");
-                return;
-              }
-
-              const user = (await supabase.auth.getUser()).data.user;
-
-              const payload = {
-                session_id: session.id,
-                market_id: m.id,
-                option_id: o.id,
-                player_id: playerId,
-                created_by: user.id
-              };
-
-              const up = await supabase
-                .from("selections")
-                .upsert(payload, { onConflict: "market_id,player_id" });
-
-              if (up.error) setStatus("Kon keuze niet opslaan");
+              await placeOrUpdateSelection(m.id, o.id);
             });
 
-            row.appendChild(btn);
+            const pct = (prob * 100);
+            const pctTxt = Number.isFinite(pct) ? (pct.toFixed(2) + "%") : "0.00%";
+            const stakeTxt = st > 0 ? money(st) : "€0,00";
+
+            btn.innerHTML =
+              "<div class='optTop'>" +
+                "<div class='optLabel'>" + escapeHtml(o.label) + "</div>" +
+                "<div class='optOdds mono'>" + fmtOdds(odds) + "</div>" +
+              "</div>" +
+              "<div class='optMeta'>" +
+                "<span>Kans " + pctTxt + "</span>" +
+                "<span>Inzet " + stakeTxt + "</span>" +
+              "</div>";
+
+            grid.appendChild(btn);
           }
-          card.appendChild(row);
+
+          card.appendChild(grid);
         }
 
         els.marketsWrap.appendChild(card);
       }
-    }
-
-    function renderPotHint() {
-      const potVal = parseFloat(String(els.pot.value || "").replace(",", "."));
-      const n = selections.length;
-
-      if (!Number.isFinite(potVal) || potVal <= 0) {
-        els.potHint.textContent = "Geen pot ingesteld";
-        return;
-      }
-      if (n <= 0) {
-        els.potHint.textContent = "Nog geen keuzes";
-        return;
-      }
-
-      els.potHint.textContent = "Inzet per keuze: " + money(potVal / n);
     }
 
     function renderSelections() {
@@ -460,38 +540,49 @@
       }
 
       if (!selections.length) {
-        els.selectionSummary.textContent = "Nog geen keuzes geplaatst.";
+        els.selectionSummary.textContent = "Nog geen inzetten geplaatst.";
         return;
       }
 
-      const potVal = parseFloat(String(els.pot.value || "").replace(",", "."));
-      const stake = Number.isFinite(potVal) && potVal > 0 ? (potVal / selections.length) : 0;
+      let totalAll = 0;
+      for (const s of selections) {
+        const st = Number(s.stake || 0);
+        if (Number.isFinite(st) && st > 0) totalAll += st;
+      }
 
       els.selectionSummary.innerHTML =
-        "<div><strong>Keuzes:</strong> " + selections.length + "</div>" +
-        "<div><strong>Pot:</strong> " + (stake ? money(potVal) : "niet ingesteld") +
-        " | <strong>Inzet per keuze:</strong> " + (stake ? money(stake) : "niet ingesteld") + "</div>";
+        "<div><strong>Aantal inzetten:</strong> " + selections.length + "</div>" +
+        "<div><strong>Totaal inzet over alles:</strong> " + money(totalAll) + "</div>";
 
       const table = document.createElement("table");
       table.className = "table";
       table.innerHTML =
         "<thead><tr>" +
-          "<th>Speler</th><th>Markt</th><th>Keuze</th><th>Odds</th><th>Inzet</th><th>Payout bij winst</th>" +
+          "<th>Speler</th><th>Markt</th><th>Keuze</th><th>Inzet</th><th>Live odds in markt</th><th>Live kans</th>" +
         "</tr></thead>";
 
       const tbody = document.createElement("tbody");
+
       for (const s of selections) {
-        const odds = Number(s.market_options?.odds || 0);
-        const payout = stake ? (stake * odds) : 0;
+        const marketId = s.market_id;
+        const optionId = s.option_id;
+
+        const stats = getMarketStakeStats(marketId);
+        const stOnOpt = stats.optionStake.get(optionId) || 0;
+        const { prob, odds } = impliedOdds(stats.totalStake, stOnOpt, stats.nOptions);
+
+        const pct = prob * 100;
+        const pctTxt = Number.isFinite(pct) ? pct.toFixed(2) + "%" : "0.00%";
 
         const tr = document.createElement("tr");
         tr.innerHTML =
           "<td>" + escapeHtml(s.players?.name || "") + "</td>" +
           "<td>" + escapeHtml(s.markets?.title || "") + "</td>" +
           "<td>" + escapeHtml(s.market_options?.label || "") + "</td>" +
-          "<td>" + (odds ? odds.toFixed(2) : "") + "</td>" +
-          "<td>" + (stake ? money(stake) : "") + "</td>" +
-          "<td>" + (payout ? money(payout) : "") + "</td>";
+          "<td>" + money(Number(s.stake || 0)) + "</td>" +
+          "<td class='mono'>" + fmtOdds(odds) + "</td>" +
+          "<td>" + pctTxt + "</td>";
+
         tbody.appendChild(tr);
       }
 
@@ -506,7 +597,6 @@
       renderMarketPick();
       renderMarkets();
       renderSelections();
-      renderPotHint();
     }
 
     async function joinFlow(code) {
@@ -541,10 +631,7 @@
       setStatus("Left");
     }
 
-    // =========================
-    // EVENTS
-    // =========================
-
+    // Events
     els.btnCreate.addEventListener("click", async () => {
       try { await createFlow(); }
       catch { setStatus("Create faalde"); }
@@ -556,6 +643,11 @@
     });
 
     els.btnLeave.addEventListener("click", () => leaveFlow());
+
+    els.playerSelect.addEventListener("change", () => {
+      localStorage.setItem(STORAGE.playerId, els.playerSelect.value || "");
+      renderPlayerSelect();
+    });
 
     els.playerForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -604,10 +696,7 @@
 
       const marketId = els.marketPick.value;
       const label = String(els.optLabel.value || "").trim();
-      const odds = parseFloat(String(els.optOdds.value || "").replace(",", "."));
-
       if (!marketId || !label) return;
-      if (!Number.isFinite(odds) || odds < 1.01) return;
 
       const existing = optionsByMarket.get(marketId) || [];
       const sort = existing.length;
@@ -615,35 +704,22 @@
       const res = await supabase.from("market_options").insert({
         market_id: marketId,
         label,
-        odds,
+        odds: 1.01,
         sort
       });
 
       if (res.error) setStatus("Kon optie niet maken");
       els.optLabel.value = "";
-      els.optOdds.value = "";
     });
 
-    els.playerSelect.addEventListener("change", () => {
-      localStorage.setItem(STORAGE.playerId, els.playerSelect.value || "");
-    });
-
-    els.pot.addEventListener("input", () => {
-      localStorage.setItem(STORAGE.pot, els.pot.value || "");
-      renderSelections();
-      renderPotHint();
-    });
-
-    // =========================
-    // BOOT
-    // =========================
+    // Boot
     async function boot() {
       try {
         const s = await ensureAnonAuth();
         els.userId.textContent = s.user.id;
 
-        const savedPot = localStorage.getItem(STORAGE.pot);
-        if (savedPot !== null) els.pot.value = savedPot;
+        const savedPlayer = localStorage.getItem(STORAGE.playerId);
+        if (savedPlayer) els.playerSelect.value = savedPlayer;
 
         const urlCode = new URLSearchParams(location.search).get("code");
         const savedCode = urlCode || localStorage.getItem(STORAGE.sessionCode);
