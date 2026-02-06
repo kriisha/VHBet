@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Vrienden Bets Live</title>
+  <style>
+    :root{--bg:#0b0d12;--text:#e9eefc;--muted:#a9b3cc;--line:#23304a;--card:#121826;--btn:#3b82f6;--btn2:#1f2937;--danger:#ef4444;--ok:#22c55e}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:radial-gradient(900px 500px at 20% 0%, #152043 0%, var(--bg) 60%);color:var(--text)}
+    .wrap{max-width:1050px;margin:0 auto;padding:24px 16px 48px}
+    h1{margin:0 0 6px;font-size:28px}
+    .sub{margin:0;color:var(--muted)}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:16px}
+    h2{margin:0 0 12px;font-size:18px}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:16px}
+    @media (min-width: 900px){.grid{grid-template-columns:1fr 1fr}}
+    input{background:rgba(255,255,255,0.03);border:1px solid var(--line);color:var(--text);padding:10px 12px;border-radius:10px;outline:none;min-width:220px}
+    input::placeholder{color:rgba(233,238,252,0.45)}
+    button{border:0;background:var(--btn);color:#081024;font-weight:800;padding:10px 12px;border-radius:10px;cursor:pointer}
+    button.secondary{background:var(--btn2);color:var(--text);border:1px solid var(--line);font-weight:700}
+    button.danger{background:var(--danger);color:#1b0a0a}
+    .hint{margin:10px 0 0;color:var(--muted);font-size:13px}
+    .tiny{font-size:12px;color:var(--muted)}
+    .list{list-style:none;padding:0;margin:12px 0 0;display:flex;flex-direction:column;gap:8px}
+    .item{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--line);background:rgba(0,0,0,0.12);border-radius:12px;padding:10px 12px}
+    .badge{font-size:12px;color:var(--muted)}
+    .summary{margin-top:12px;padding:12px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,0.18)}
+    .table{width:100%;border-collapse:collapse;margin-top:12px;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+    .table th,.table td{padding:10px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}
+    .table th{color:var(--muted);font-weight:800}
+    .table tr:last-child td{border-bottom:0}
+    .pos{color:var(--ok);font-weight:800}
+    .neg{color:#fca5a5;font-weight:800}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:999px;background:rgba(0,0,0,0.18)}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Vrienden Bets Live</h1>
+      <p class="sub">Iedereen ziet dezelfde sessie, live updates, zonder accounts.</p>
+    </header>
+
+    <section class="card">
+      <h2>Sessie</h2>
+      <div class="row">
+        <button id="btnCreate" type="button">Nieuwe sessie maken</button>
+        <input id="joinCode" class="mono" placeholder="Join code" />
+        <button id="btnJoin" class="secondary" type="button">Join</button>
+        <button id="btnLeave" class="danger" type="button">Leave</button>
+        <span id="status" class="tiny"></span>
+      </div>
+      <div style="margin-top:12px" class="row">
+        <span class="pill">User <span id="userId" class="mono"></span></span>
+        <span class="pill">Sessie <span id="sessionCode" class="mono"></span></span>
+      </div>
+      <p class="hint">
+        Deel de join code met je vrienden. Iedereen die de code heeft kan meedoen.
+      </p>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h2>Spelers</h2>
+        <form id="playerForm" class="row">
+          <input id="playerName" placeholder="Naam speler" autocomplete="off" />
+          <button type="submit">Toevoegen</button>
+        </form>
+        <ul id="playerList" class="list"></ul>
+      </div>
+
+      <div class="card">
+        <h2>Bets</h2>
+        <form id="betForm" class="row">
+          <input id="betText" placeholder="Bet omschrijving" autocomplete="off" />
+          <input id="betOdds" type="number" step="0.01" min="1.01" placeholder="Odds, bv 2.20" />
+          <button type="submit">Toevoegen</button>
+        </form>
+        <ul id="betList" class="list"></ul>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Pot en verdeling</h2>
+      <div class="row">
+        <input id="totalPot" type="number" step="1" min="0" placeholder="Totaal pot €" />
+        <button id="btnCalc" class="secondary" type="button">Herbereken</button>
+      </div>
+      <div id="summary" class="summary"></div>
+      <div id="calcTableWrap"></div>
+      <p class="hint">Berekening gebeurt in de UI. Live data komt uit Supabase.</p>
+    </section>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+    const SUPABASE_URL = "https://cyctrlgnkurleyzqglgd.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5Y3RybGdua3VybGV5enFnbGdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0MDQyMDAsImV4cCI6MjA4NTk4MDIwMH0._U1IRle7-QRBW-sTjNAbP27gLfTVr_xz0FoyXu80NZ0";
+
+    const STORAGE = {
+      sessionCode: "vb_live_session_code",
+      pot: "vb_live_total_pot"
+    };
+
+    const els = {
+      btnCreate: document.getElementById("btnCreate"),
+      joinCode: document.getElementById("joinCode"),
+      btnJoin: document.getElementById("btnJoin"),
+      btnLeave: document.getElementById("btnLeave"),
+      status: document.getElementById("status"),
+      userId: document.getElementById("userId"),
+      sessionCode: document.getElementById("sessionCode"),
+
+      playerForm: document.getElementById("playerForm"),
+      playerName: document.getElementById("playerName"),
+      playerList: document.getElementById("playerList"),
+
+      betForm: document.getElementById("betForm"),
+      betText: document.getElementById("betText"),
+      betOdds: document.getElementById("betOdds"),
+      betList: document.getElementById("betList"),
+
+      totalPot: document.getElementById("totalPot"),
+      btnCalc: document.getElementById("btnCalc"),
+      summary: document.getElementById("summary"),
+      calcTableWrap: document.getElementById("calcTableWrap"),
+    };
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let session = null;         // { id, code }
+    let realtimeChannel = null;
+    let players = [];
+    let bets = [];
+
+    function setStatus(msg) {
+      els.status.textContent = msg || "";
+      if (msg) setTimeout(() => (els.status.textContent = ""), 1500);
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function money(n) {
+      if (!Number.isFinite(n)) return "€0,00";
+      return new Intl.NumberFormat("nl-BE", { style: "currency", currency: "EUR" }).format(n);
+    }
+
+    async function ensureAnonAuth() {
+      const { data: s } = await supabase.auth.getSession();
+      if (s?.session) return s.session;
+
+      const { data, error } = await supabase.auth.signInAnonymously();
+      if (error) throw error;
+      return data.session;
+    }
+
+    async function loadSessionByCode(code) {
+      const upper = String(code || "").trim().toUpperCase();
+      if (!upper) throw new Error("No code");
+      const { data, error } = await supabase.rpc("join_session", { p_code: upper });
+      if (error) throw error;
+      return data?.[0] || null; // { session_id, code }
+    }
+
+    async function createSession() {
+      const { data, error } = await supabase.rpc("create_session");
+      if (error) throw error;
+      return data?.[0] || null; // { session_id, code }
+    }
+
+    async function fetchAll() {
+      if (!session) return;
+
+      const p = await supabase.from("players")
+        .select("*")
+        .eq("session_id", session.id)
+        .order("created_at", { ascending: true });
+
+      if (p.error) throw p.error;
+      players = p.data || [];
+
+      const b = await supabase.from("bets")
+        .select("*")
+        .eq("session_id", session.id)
+        .order("created_at", { ascending: true });
+
+      if (b.error) throw b.error;
+      bets = b.data || [];
+
+      renderAll();
+    }
+
+    function teardownRealtime() {
+      if (realtimeChannel) {
+        supabase.removeChannel(realtimeChannel);
+        realtimeChannel = null;
+      }
+    }
+
+    function setupRealtime() {
+      teardownRealtime();
+      if (!session) return;
+
+      realtimeChannel = supabase
+        .channel("vb_live_" + session.id)
+        .on("postgres_changes",
+          { event: "*", schema: "public", table: "players", filter: "session_id=eq." + session.id },
+          async () => { await fetchAll(); }
+        )
+        .on("postgres_changes",
+          { event: "*", schema: "public", table: "bets", filter: "session_id=eq." + session.id },
+          async () => { await fetchAll(); }
+        )
+        .subscribe();
+    }
+
+    function renderPlayers() {
+      els.playerList.innerHTML = "";
+      if (!session) {
+        els.playerList.innerHTML = "<li class='hint'>Join eerst een sessie.</li>";
+        return;
+      }
+      if (players.length === 0) {
+        els.playerList.innerHTML = "<li class='hint'>Nog geen spelers.</li>";
+        return;
+      }
+
+      for (const p of players) {
+        const li = document.createElement("li");
+        li.className = "item";
+        li.innerHTML =
+          "<div><strong>" + escapeHtml(p.name) + "</strong> <span class='badge'>speler</span></div>";
+
+        const btn = document.createElement("button");
+        btn.className = "secondary";
+        btn.type = "button";
+        btn.textContent = "Verwijder";
+        btn.addEventListener("click", async () => {
+          const res = await supabase.from("players").delete().eq("id", p.id);
+          if (res.error) setStatus("Geen rechten om te verwijderen");
+        });
+
+        li.appendChild(btn);
+        els.playerList.appendChild(li);
+      }
+    }
+
+    function renderBets() {
+      els.betList.innerHTML = "";
+      if (!session) {
+        els.betList.innerHTML = "<li class='hint'>Join eerst een sessie.</li>";
+        return;
+      }
+      if (bets.length === 0) {
+        els.betList.innerHTML = "<li class='hint'>Nog geen bets.</li>";
+        return;
+      }
+
+      for (const b of bets) {
+        const li = document.createElement("li");
+        li.className = "item";
+        li.innerHTML =
+          "<div><strong>" + escapeHtml(b.text) + "</strong> <span class='badge'>odds " +
+          Number(b.odds).toFixed(2) + "</span></div>";
+
+        const btn = document.createElement("button");
+        btn.className = "secondary";
+        btn.type = "button";
+        btn.textContent = "Verwijder";
+        btn.addEventListener("click", async () => {
+          const res = await supabase.from("bets").delete().eq("id", b.id);
+          if (res.error) setStatus("Geen rechten om te verwijderen");
+        });
+
+        li.appendChild(btn);
+        els.betList.appendChild(li);
+      }
+    }
+
+    function renderCalc() {
+      els.calcTableWrap.innerHTML = "";
+
+      const playersCount = players.length;
+      const betsCount = bets.length;
+      const pot = parseFloat(String(els.totalPot.value || "").replace(",", "."));
+
+      if (!session) {
+        els.summary.textContent = "Join een sessie om te starten.";
+        return;
+      }
+      if (playersCount === 0 || betsCount === 0) {
+        els.summary.textContent = "Voeg minstens 1 speler en 1 bet toe om te rekenen.";
+        return;
+      }
+      if (!Number.isFinite(pot) || pot <= 0) {
+        els.summary.textContent = "Geef een totaal pot bedrag in om te rekenen.";
+        return;
+      }
+
+      const contributionPerPlayer = pot / playersCount;
+      const stakePerBet = pot / betsCount;
+
+      els.summary.innerHTML =
+        "<div><strong>Spelers:</strong> " + playersCount +
+        " | <strong>Bets:</strong> " + betsCount +
+        " | <strong>Pot:</strong> " + money(pot) + "</div>" +
+        "<div><strong>Bijdrage per speler:</strong> " + money(contributionPerPlayer) +
+        " | <strong>Inzet per bet:</strong> " + money(stakePerBet) + "</div>";
+
+      const table = document.createElement("table");
+      table.className = "table";
+      table.innerHTML =
+        "<thead><tr><th>Bet</th><th>Odds</th><th>Payout bij winst</th><th>Payout per speler</th><th>Winst per speler</th></tr></thead>";
+      const tbody = document.createElement("tbody");
+
+      for (const b of bets) {
+        const odds = Number(b.odds);
+        const payoutBet = stakePerBet * odds;
+        const payoutPerPlayer = payoutBet / playersCount;
+        const profitPerPlayer = payoutPerPlayer - contributionPerPlayer;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML =
+          "<td>" + escapeHtml(b.text) + "</td>" +
+          "<td>" + odds.toFixed(2) + "</td>" +
+          "<td>" + money(payoutBet) + "</td>" +
+          "<td>" + money(payoutPerPlayer) + "</td>" +
+          "<td class='" + (profitPerPlayer >= 0 ? "pos" : "neg") + "'>" + money(profitPerPlayer) + "</td>";
+        tbody.appendChild(tr);
+      }
+      table.appendChild(tbody);
+      els.calcTableWrap.appendChild(table);
+    }
+
+    function renderAll() {
+      els.sessionCode.textContent = session ? session.code : "geen";
+      renderPlayers();
+      renderBets();
+      renderCalc();
+    }
+
+    async function joinFlow(code) {
+      const joined = await loadSessionByCode(code);
+      if (!joined) throw new Error("Join failed");
+      session = { id: joined.session_id, code: joined.code };
+      localStorage.setItem(STORAGE.sessionCode, session.code);
+      setupRealtime();
+      await fetchAll();
+      setStatus("Joined");
+    }
+
+    async function createFlow() {
+      const created = await createSession();
+      if (!created) throw new Error("Create failed");
+      session = { id: created.session_id, code: created.code };
+      localStorage.setItem(STORAGE.sessionCode, session.code);
+      setupRealtime();
+      await fetchAll();
+      setStatus("Sessie gemaakt");
+    }
+
+    function leaveFlow() {
+      teardownRealtime();
+      session = null;
+      players = [];
+      bets = [];
+      localStorage.removeItem(STORAGE.sessionCode);
+      renderAll();
+      setStatus("Left");
+    }
+
+    els.playerForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!session) return;
+
+      const name = String(els.playerName.value || "").trim().replace(/\s+/g, " ");
+      if (!name) return;
+
+      const res = await supabase.from("players").insert({
+        session_id: session.id,
+        name,
+        created_by: (await supabase.auth.getUser()).data.user.id
+      });
+
+      if (res.error) setStatus("Kon niet toevoegen");
+      els.playerName.value = "";
+    });
+
+    els.betForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!session) return;
+
+      const text = String(els.betText.value || "").trim().replace(/\s+/g, " ");
+      const odds = parseFloat(String(els.betOdds.value || "").trim().replace(",", "."));
+
+      if (!text) return;
+      if (!Number.isFinite(odds) || odds < 1.01) return;
+
+      const res = await supabase.from("bets").insert({
+        session_id: session.id,
+        text,
+        odds,
+        created_by: (await supabase.auth.getUser()).data.user.id
+      });
+
+      if (res.error) setStatus("Kon niet toevoegen");
+      els.betText.value = "";
+      els.betOdds.value = "";
+    });
+
+    els.btnCalc.addEventListener("click", () => renderCalc());
+    els.totalPot.addEventListener("input", () => {
+      localStorage.setItem(STORAGE.pot, els.totalPot.value || "");
+      renderCalc();
+    });
+
+    els.btnJoin.addEventListener("click", async () => {
+      try {
+        const code = els.joinCode.value;
+        await joinFlow(code);
+      } catch {
+        setStatus("Join code ongeldig");
+      }
+    });
+
+    els.btnCreate.addEventListener("click", async () => {
+      try { await createFlow(); }
+      catch { setStatus("Create faalde"); }
+    });
+
+    els.btnLeave.addEventListener("click", () => leaveFlow());
+
+    async function boot() {
+      try {
+        const s = await ensureAnonAuth();
+        els.userId.textContent = s.user.id;
+
+        const savedPot = localStorage.getItem(STORAGE.pot);
+        if (savedPot !== null) els.totalPot.value = savedPot;
+
+        const savedCode = localStorage.getItem(STORAGE.sessionCode);
+        if (savedCode) {
+          els.joinCode.value = savedCode;
+          await joinFlow(savedCode);
+        } else {
+          renderAll();
+        }
+      } catch {
+        setStatus("Auth probleem");
+      }
+    }
+
+    boot();
+  </script>
+</body>
+</html>
