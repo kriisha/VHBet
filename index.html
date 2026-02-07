@@ -8,7 +8,7 @@
     :root{--bg:#0b0d12;--text:#e9eefc;--muted:#a9b3cc;--line:#23304a;--card:#121826;--btn:#3b82f6;--btn2:#1f2937;--danger:#ef4444;--ok:#22c55e}
     *{box-sizing:border-box}
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:radial-gradient(900px 500px at 20% 0%, #152043 0%, var(--bg) 60%);color:var(--text)}
-    .wrap{max-width:1100px;margin:0 auto;padding:24px 16px 48px}
+    .wrap{max-width:1120px;margin:0 auto;padding:24px 16px 48px}
     h1{margin:0 0 6px;font-size:28px}
     .sub{margin:0;color:var(--muted)}
     .card{background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:16px}
@@ -18,46 +18,41 @@
     @media (min-width: 980px){.grid{grid-template-columns:1fr 1fr}}
     input, select{background:rgba(255,255,255,0.03);border:1px solid var(--line);color:var(--text);padding:10px 12px;border-radius:10px;outline:none;min-width:220px}
     input::placeholder{color:rgba(233,238,252,0.45)}
-    button{border:0;background:var(--btn);color:#081024;font-weight:800;padding:10px 12px;border-radius:10px;cursor:pointer}
-    button.secondary{background:var(--btn2);color:var(--text);border:1px solid var(--line);font-weight:700}
+    button{border:0;background:var(--btn);color:#081024;font-weight:900;padding:10px 12px;border-radius:10px;cursor:pointer}
+    button.secondary{background:var(--btn2);color:var(--text);border:1px solid var(--line);font-weight:800}
     button.danger{background:var(--danger);color:#1b0a0a}
+    button:disabled{opacity:0.45;cursor:not-allowed}
     .hint{margin:10px 0 0;color:var(--muted);font-size:13px}
     .tiny{font-size:12px;color:var(--muted)}
     .list{list-style:none;padding:0;margin:12px 0 0;display:flex;flex-direction:column;gap:8px}
     .item{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--line);background:rgba(0,0,0,0.12);border-radius:12px;padding:10px 12px}
     .badge{font-size:12px;color:var(--muted)}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:999px;background:rgba(0,0,0,0.18)}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
     .summary{margin-top:12px;padding:12px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,0.18)}
     .table{width:100%;border-collapse:collapse;margin-top:12px;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
     .table th,.table td{padding:10px;border-bottom:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top}
-    .table th{color:var(--muted);font-weight:800}
+    .table th{color:var(--muted);font-weight:900}
     .table tr:last-child td{border-bottom:0}
-    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:999px;background:rgba(0,0,0,0.18)}
-    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
     .marketCard{margin-top:12px}
     .optGrid{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
-    .optBtn{
-      min-width: 190px;
-      text-align:left;
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid var(--line);
-      background: rgba(0,0,0,0.14);
-      color: var(--text);
-      cursor: pointer;
-    }
+    .optBtn{min-width:210px;text-align:left;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,0.14);color:var(--text);cursor:pointer}
     .optBtn:hover{filter:brightness(1.06)}
     .optTop{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
     .optLabel{font-weight:900}
     .optOdds{font-weight:900}
     .optMeta{margin-top:6px;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:10px}
-    .ok{color:var(--ok);font-weight:800}
+    .optYou{margin-top:8px;font-size:12px;color:var(--text);opacity:0.92}
+    .ok{color:var(--ok);font-weight:900}
+    .warn{color:#fca5a5;font-weight:900}
+    .right{display:flex;gap:10px;align-items:center}
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
       <h1>Vrienden Bets Live</h1>
-      <p class="sub">Iedereen ziet dezelfde sessie, live odds op basis van inzetten.</p>
+      <p class="sub">Pool betting met live odds. Host beheert spelers en markten.</p>
     </header>
 
     <section class="card">
@@ -73,11 +68,10 @@
       <div style="margin-top:12px" class="row">
         <span class="pill">User <span id="userId" class="mono"></span></span>
         <span class="pill">Sessie <span id="sessionCode" class="mono"></span></span>
+        <span class="pill">Role <span id="roleBadge" class="mono"></span></span>
       </div>
 
-      <p class="hint">
-        Deel de sessiecode of deel de link, de code staat automatisch in de URL na create of join.
-      </p>
+      <p class="hint">De host is de persoon die de sessie aangemaakt heeft.</p>
     </section>
 
     <section class="card">
@@ -88,9 +82,7 @@
         </select>
         <span class="tiny" id="playerHint"></span>
       </div>
-      <p class="hint">
-        Selecteer je speler, klik daarna op een optie en geef je inzet in.
-      </p>
+      <p class="hint">Iedereen kan inzetten plaatsen. Alleen de host kan spelers en markten beheren.</p>
     </section>
 
     <section class="grid">
@@ -98,10 +90,10 @@
         <h2>Spelers</h2>
         <form id="playerForm" class="row">
           <input id="playerName" placeholder="Naam speler" autocomplete="off" />
-          <button type="submit">Toevoegen</button>
+          <button id="btnAddPlayer" type="submit">Toevoegen</button>
         </form>
         <ul id="playerList" class="list"></ul>
-        <p class="hint">Verwijderen kan enkel door de maker van die speler.</p>
+        <p class="hint" id="playerHostHint"></p>
       </div>
 
       <div class="card">
@@ -110,20 +102,18 @@
         <form id="marketForm" class="row">
           <input id="marketTitle" placeholder="Titel, bv Eindresultaat" />
           <input id="marketMatch" placeholder="Match, bv Westerlo vs STVV" />
-          <button type="submit">Markt maken</button>
+          <button id="btnAddMarket" type="submit">Markt maken</button>
         </form>
 
         <form id="optionForm" class="row" style="margin-top:10px">
           <select id="marketPick" style="min-width:260px">
             <option value="">Kies markt om opties toe te voegen</option>
           </select>
-          <input id="optLabel" placeholder="Keuze label, bv 1 of Team 1 wint" style="min-width:260px" />
-          <button type="submit" class="secondary">Optie toevoegen</button>
+          <input id="optLabel" placeholder="Optie label, bv 1 of Team 1 wint" style="min-width:260px" />
+          <button id="btnAddOption" type="submit" class="secondary">Optie toevoegen</button>
         </form>
 
-        <p class="hint">
-          Odds worden niet meer manueel gezet, ze komen live uit de inzet verdeling.
-        </p>
+        <p class="hint" id="marketHostHint"></p>
       </div>
     </section>
 
@@ -159,30 +149,37 @@
       status: document.getElementById("status"),
       userId: document.getElementById("userId"),
       sessionCode: document.getElementById("sessionCode"),
+      roleBadge: document.getElementById("roleBadge"),
 
       playerForm: document.getElementById("playerForm"),
       playerName: document.getElementById("playerName"),
+      btnAddPlayer: document.getElementById("btnAddPlayer"),
       playerList: document.getElementById("playerList"),
       playerSelect: document.getElementById("playerSelect"),
       playerHint: document.getElementById("playerHint"),
+      playerHostHint: document.getElementById("playerHostHint"),
 
       marketForm: document.getElementById("marketForm"),
       marketTitle: document.getElementById("marketTitle"),
       marketMatch: document.getElementById("marketMatch"),
+      btnAddMarket: document.getElementById("btnAddMarket"),
 
       optionForm: document.getElementById("optionForm"),
       marketPick: document.getElementById("marketPick"),
       optLabel: document.getElementById("optLabel"),
+      btnAddOption: document.getElementById("btnAddOption"),
+      marketHostHint: document.getElementById("marketHostHint"),
 
       marketsWrap: document.getElementById("marketsWrap"),
-
       selectionSummary: document.getElementById("selectionSummary"),
       selectionTableWrap: document.getElementById("selectionTableWrap"),
     };
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let session = null; // { id, code }
+    let session = null; // { id, code, hostId }
+    let userId = null;
+    let isHost = false;
     let realtimeChannel = null;
 
     let players = [];
@@ -207,6 +204,11 @@
     function money(n) {
       if (!Number.isFinite(n)) return "€0,00";
       return new Intl.NumberFormat("nl-BE", { style: "currency", currency: "EUR" }).format(n);
+    }
+
+    function num(v) {
+      const x = parseFloat(String(v ?? "").replace(",", "."));
+      return Number.isFinite(x) ? x : 0;
     }
 
     function fmtOdds(n) {
@@ -256,11 +258,39 @@
 
       realtimeChannel = supabase
         .channel("vb_live_" + session.id)
-        .on("postgres_changes", { event: "*", schema: "public", table: "players", filter: "session_id=eq." + session.id }, async () => { await refreshAll(); })
-        .on("postgres_changes", { event: "*", schema: "public", table: "markets", filter: "session_id=eq." + session.id }, async () => { await refreshAll(); })
-        .on("postgres_changes", { event: "*", schema: "public", table: "market_options" }, async () => { await refreshAll(); })
-        .on("postgres_changes", { event: "*", schema: "public", table: "selections", filter: "session_id=eq." + session.id }, async () => { await refreshAll(); })
-        .subscribe();
+        .on("postgres_changes", { event: "*", schema: "public", table: "players", filter: "session_id=eq." + session.id }, () => refreshAll())
+        .on("postgres_changes", { event: "*", schema: "public", table: "markets", filter: "session_id=eq." + session.id }, () => refreshAll())
+        .on("postgres_changes", { event: "*", schema: "public", table: "selections", filter: "session_id=eq." + session.id }, () => refreshAll())
+        .on("postgres_changes", { event: "*", schema: "public", table: "market_options" }, () => refreshAll())
+        .subscribe((status) => {
+          if (status === "SUBSCRIBED") setStatus("Live connected");
+        });
+    }
+
+    async function loadHostInfo() {
+      const q = await supabase.from("sessions").select("created_by").eq("id", session.id).single();
+      if (q.error) throw q.error;
+      session.hostId = q.data.created_by;
+      isHost = (session.hostId === userId);
+      els.roleBadge.textContent = isHost ? "host" : "player";
+      applyHostUiState();
+    }
+
+    function applyHostUiState() {
+      const hostText = isHost ? "Host mode: je kan spelers en markten beheren." : "Alleen de host kan spelers en markten beheren.";
+      els.playerHostHint.textContent = hostText;
+      els.marketHostHint.textContent = hostText;
+
+      els.playerName.disabled = !isHost;
+      els.btnAddPlayer.disabled = !isHost;
+
+      els.marketTitle.disabled = !isHost;
+      els.marketMatch.disabled = !isHost;
+      els.btnAddMarket.disabled = !isHost;
+
+      els.marketPick.disabled = !isHost;
+      els.optLabel.disabled = !isHost;
+      els.btnAddOption.disabled = !isHost;
     }
 
     async function refreshAll() {
@@ -270,14 +300,16 @@
         .select("*")
         .eq("session_id", session.id)
         .order("created_at", { ascending: true });
-      if (p.error) throw p.error;
+      if (p.error) return;
+
       players = p.data || [];
 
       const m = await supabase.from("markets")
         .select("*")
         .eq("session_id", session.id)
         .order("created_at", { ascending: true });
-      if (m.error) throw m.error;
+      if (m.error) return;
+
       markets = m.data || [];
 
       optionsByMarket = new Map();
@@ -287,7 +319,7 @@
           .select("*")
           .in("market_id", marketIds)
           .order("sort", { ascending: true });
-        if (o.error) throw o.error;
+        if (o.error) return;
 
         for (const opt of (o.data || [])) {
           const arr = optionsByMarket.get(opt.market_id) || [];
@@ -300,7 +332,8 @@
         .select("*, players(name), market_options(label), markets(title, match_label)")
         .eq("session_id", session.id)
         .order("created_at", { ascending: true });
-      if (s.error) throw s.error;
+      if (s.error) return;
+
       selections = s.data || [];
 
       renderAll();
@@ -330,7 +363,6 @@
         els.playerList.innerHTML = "<li class='hint'>Join eerst een sessie.</li>";
         return;
       }
-
       if (!players.length) {
         els.playerList.innerHTML = "<li class='hint'>Nog geen spelers.</li>";
         return;
@@ -339,18 +371,45 @@
       for (const pl of players) {
         const li = document.createElement("li");
         li.className = "item";
-        li.innerHTML = "<div><strong>" + escapeHtml(pl.name) + "</strong> <span class='badge'>speler</span></div>";
 
-        const btn = document.createElement("button");
-        btn.className = "secondary";
-        btn.type = "button";
-        btn.textContent = "Verwijder";
-        btn.addEventListener("click", async () => {
-          const res = await supabase.from("players").delete().eq("id", pl.id);
-          if (res.error) setStatus("Geen rechten om te verwijderen");
-        });
+        const left = document.createElement("div");
+        left.innerHTML = "<strong>" + escapeHtml(pl.name) + "</strong> <span class='badge'>speler</span>";
+        li.appendChild(left);
 
-        li.appendChild(btn);
+        const actions = document.createElement("div");
+        actions.className = "right";
+
+        if (isHost) {
+          const edit = document.createElement("button");
+          edit.className = "secondary";
+          edit.type = "button";
+          edit.textContent = "Bewerk";
+          edit.addEventListener("click", async () => {
+            const next = prompt("Nieuwe naam", pl.name);
+            if (!next) return;
+            const res = await supabase.from("players").update({ name: next.trim() }).eq("id", pl.id);
+            if (res.error) setStatus("Kon niet bewerken");
+          });
+
+          const del = document.createElement("button");
+          del.className = "secondary";
+          del.type = "button";
+          del.textContent = "Verwijder";
+          del.addEventListener("click", async () => {
+            const res = await supabase.from("players").delete().eq("id", pl.id);
+            if (res.error) setStatus("Kon niet verwijderen");
+          });
+
+          actions.appendChild(edit);
+          actions.appendChild(del);
+        } else {
+          const lock = document.createElement("span");
+          lock.className = "badge";
+          lock.textContent = "host only";
+          actions.appendChild(lock);
+        }
+
+        li.appendChild(actions);
         els.playerList.appendChild(li);
       }
     }
@@ -365,49 +424,39 @@
       }
     }
 
-    function getMarketStakeStats(marketId) {
+    function getMarketStats(marketId) {
       const opts = optionsByMarket.get(marketId) || [];
-      const optionIds = new Set(opts.map(o => o.id));
-
       const optionStake = new Map();
       let total = 0;
 
       for (const s of selections) {
         if (s.market_id !== marketId) continue;
-        if (!optionIds.has(s.option_id)) continue;
-        const st = Number(s.stake || 0);
-        if (!Number.isFinite(st) || st <= 0) continue;
+        const st = num(s.stake);
+        if (st <= 0) continue;
         total += st;
         optionStake.set(s.option_id, (optionStake.get(s.option_id) || 0) + st);
       }
 
-      const n = opts.length || 1;
-
-      return { opts, totalStake: total, optionStake, nOptions: n };
+      const nOptions = opts.length || 1;
+      return { opts, optionStake, totalStake: total, nOptions };
     }
 
     function impliedOdds(totalStake, stakeOnOption, nOptions) {
-      if (nOptions <= 0) nOptions = 1;
+      if (totalStake <= 0) return { prob: 1 / nOptions, odds: nOptions };
+      if (stakeOnOption <= 0) return { prob: 0, odds: Infinity };
+      const prob = stakeOnOption / totalStake;
+      return { prob, odds: 1 / prob };
+    }
 
-      if (!Number.isFinite(totalStake) || totalStake <= 0) {
-        return { prob: 1 / nOptions, odds: nOptions };
-      }
-
-      const st = Number(stakeOnOption || 0);
-      if (!Number.isFinite(st) || st <= 0) {
-        return { prob: 0, odds: Infinity };
-      }
-
-      const prob = st / totalStake;
-      const odds = 1 / prob;
-      return { prob, odds };
+    function selectionForPlayerMarket(playerId, marketId) {
+      return selections.find(s => s.player_id === playerId && s.market_id === marketId) || null;
     }
 
     function askStake(defaultValue) {
-      const raw = prompt("Hoeveel wil je inzetten in euro", defaultValue);
+      const raw = prompt("Inzet in euro", defaultValue);
       if (raw === null) return null;
-      const v = parseFloat(String(raw).replace(",", "."));
-      if (!Number.isFinite(v) || v <= 0) return null;
+      const v = num(raw);
+      if (v <= 0) return null;
       return v;
     }
 
@@ -418,8 +467,9 @@
         return;
       }
 
-      const prev = localStorage.getItem(STORAGE.lastStake) || "5";
-      const stake = askStake(prev);
+      const prevSel = selectionForPlayerMarket(playerId, marketId);
+      const prevStake = prevSel ? String(prevSel.stake) : (localStorage.getItem(STORAGE.lastStake) || "5");
+      const stake = askStake(prevStake);
       if (stake === null) {
         setStatus("Ongeldige inzet");
         return;
@@ -433,8 +483,8 @@
         market_id: marketId,
         option_id: optionId,
         player_id: playerId,
-        created_by: user.id,
-        stake: stake
+        stake: stake,
+        created_by: user.id
       };
 
       const up = await supabase
@@ -446,20 +496,19 @@
 
     function renderMarkets() {
       els.marketsWrap.innerHTML = "";
-
       if (!session) {
         els.marketsWrap.innerHTML = "<p class='hint'>Join eerst een sessie.</p>";
         return;
       }
-
       if (!markets.length) {
-        els.marketsWrap.innerHTML = "<p class='hint'>Maak een markt en voeg opties toe, odds komen vanzelf.</p>";
+        els.marketsWrap.innerHTML = "<p class='hint'>Maak een markt en voeg opties toe.</p>";
         return;
       }
 
+      const activePlayerId = els.playerSelect.value;
+
       for (const m of markets) {
-        const stats = getMarketStakeStats(m.id);
-        const { opts, totalStake, optionStake, nOptions } = stats;
+        const { opts, optionStake, totalStake, nOptions } = getMarketStats(m.id);
 
         const card = document.createElement("div");
         card.className = "card marketCard";
@@ -469,22 +518,47 @@
         head.style.justifyContent = "space-between";
 
         const left = document.createElement("div");
-        const potTxt = totalStake > 0 ? money(totalStake) : "€0,00";
         left.innerHTML =
           "<div><strong>" + escapeHtml(m.title) + "</strong> <span class='badge'>" + escapeHtml(m.match_label || "") + "</span></div>" +
-          "<div class='tiny'>Pot in deze markt: <span class='ok'>" + potTxt + "</span> | Opties: " + nOptions + "</div>";
+          "<div class='tiny'>Pot in deze markt: <span class='ok'>" + money(totalStake) + "</span> | Opties: " + nOptions + "</div>";
 
-        const del = document.createElement("button");
-        del.className = "secondary";
-        del.type = "button";
-        del.textContent = "Verwijder markt";
-        del.addEventListener("click", async () => {
-          const res = await supabase.from("markets").delete().eq("id", m.id);
-          if (res.error) setStatus("Kon niet verwijderen");
-        });
+        const actions = document.createElement("div");
+        actions.className = "right";
+
+        if (isHost) {
+          const edit = document.createElement("button");
+          edit.className = "secondary";
+          edit.type = "button";
+          edit.textContent = "Bewerk";
+          edit.addEventListener("click", async () => {
+            const t = prompt("Titel", m.title);
+            if (t === null) return;
+            const ml = prompt("Match label", m.match_label || "");
+            if (ml === null) return;
+            const res = await supabase.from("markets").update({ title: t.trim(), match_label: ml.trim() }).eq("id", m.id);
+            if (res.error) setStatus("Kon niet bewerken");
+          });
+
+          const del = document.createElement("button");
+          del.className = "secondary";
+          del.type = "button";
+          del.textContent = "Verwijder";
+          del.addEventListener("click", async () => {
+            const res = await supabase.from("markets").delete().eq("id", m.id);
+            if (res.error) setStatus("Kon niet verwijderen");
+          });
+
+          actions.appendChild(edit);
+          actions.appendChild(del);
+        } else {
+          const lock = document.createElement("span");
+          lock.className = "badge";
+          lock.textContent = "host only";
+          actions.appendChild(lock);
+        }
 
         head.appendChild(left);
-        head.appendChild(del);
+        head.appendChild(actions);
         card.appendChild(head);
 
         if (!opts.length) {
@@ -492,39 +566,100 @@
           h.className = "hint";
           h.textContent = "Voeg opties toe aan deze markt.";
           card.appendChild(h);
-        } else {
-          const grid = document.createElement("div");
-          grid.className = "optGrid";
+          els.marketsWrap.appendChild(card);
+          continue;
+        }
 
-          for (const o of opts) {
-            const st = optionStake.get(o.id) || 0;
-            const { prob, odds } = impliedOdds(totalStake, st, nOptions);
+        const grid = document.createElement("div");
+        grid.className = "optGrid";
 
-            const btn = document.createElement("button");
-            btn.type = "button";
-            btn.className = "optBtn";
-            btn.addEventListener("click", async () => {
-              await placeOrUpdateSelection(m.id, o.id);
-            });
+        const activeSel = activePlayerId ? selectionForPlayerMarket(activePlayerId, m.id) : null;
 
-            const pct = (prob * 100);
-            const pctTxt = Number.isFinite(pct) ? (pct.toFixed(2) + "%") : "0.00%";
-            const stakeTxt = st > 0 ? money(st) : "€0,00";
+        for (const o of opts) {
+          const stOnOpt = num(optionStake.get(o.id) || 0);
+          const { prob, odds } = impliedOdds(totalStake, stOnOpt, nOptions);
 
-            btn.innerHTML =
-              "<div class='optTop'>" +
-                "<div class='optLabel'>" + escapeHtml(o.label) + "</div>" +
-                "<div class='optOdds mono'>" + fmtOdds(odds) + "</div>" +
-              "</div>" +
-              "<div class='optMeta'>" +
-                "<span>Kans " + pctTxt + "</span>" +
-                "<span>Inzet " + stakeTxt + "</span>" +
-              "</div>";
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "optBtn";
 
-            grid.appendChild(btn);
+          const pct = (prob * 100);
+          const pctTxt = Number.isFinite(pct) ? pct.toFixed(2) + "%" : "0.00%";
+
+          btn.innerHTML =
+            "<div class='optTop'>" +
+              "<div class='optLabel'>" + escapeHtml(o.label) + "</div>" +
+              "<div class='optOdds mono'>" + fmtOdds(odds) + "</div>" +
+            "</div>" +
+            "<div class='optMeta'>" +
+              "<span>Kans " + pctTxt + "</span>" +
+              "<span>Inzet " + money(stOnOpt) + "</span>" +
+            "</div>";
+
+          if (activeSel && activeSel.option_id === o.id) {
+            const yourStake = num(activeSel.stake);
+            const payout = (stOnOpt > 0) ? (yourStake / stOnOpt) * totalStake : 0;
+            const profit = payout - yourStake;
+
+            const you = document.createElement("div");
+            you.className = "optYou";
+            you.innerHTML =
+              "Jij: inzet <span class='ok'>" + money(yourStake) + "</span> | payout bij winst <span class='ok'>" + money(payout) + "</span> | winst <span class='ok'>" + money(profit) + "</span>";
+            btn.appendChild(you);
           }
 
-          card.appendChild(grid);
+          btn.addEventListener("click", () => placeOrUpdateSelection(m.id, o.id));
+
+          grid.appendChild(btn);
+        }
+
+        card.appendChild(grid);
+
+        if (isHost) {
+          const optList = document.createElement("div");
+          optList.className = "list";
+          optList.style.marginTop = "12px";
+
+          for (const o of opts) {
+            const li = document.createElement("div");
+            li.className = "item";
+            li.innerHTML = "<div><strong>" + escapeHtml(o.label) + "</strong> <span class='badge'>optie</span></div>";
+
+            const act = document.createElement("div");
+            act.className = "right";
+
+            const edit = document.createElement("button");
+            edit.className = "secondary";
+            edit.type = "button";
+            edit.textContent = "Bewerk";
+            edit.addEventListener("click", async () => {
+              const next = prompt("Nieuwe label", o.label);
+              if (!next) return;
+              const res = await supabase.from("market_options").update({ label: next.trim() }).eq("id", o.id);
+              if (res.error) setStatus("Kon optie niet bewerken");
+            });
+
+            const del = document.createElement("button");
+            del.className = "secondary";
+            del.type = "button";
+            del.textContent = "Verwijder";
+            del.addEventListener("click", async () => {
+              const res = await supabase.from("market_options").delete().eq("id", o.id);
+              if (res.error) setStatus("Kon optie niet verwijderen");
+            });
+
+            act.appendChild(edit);
+            act.appendChild(del);
+            li.appendChild(act);
+            optList.appendChild(li);
+          }
+
+          const hint = document.createElement("p");
+          hint.className = "hint";
+          hint.textContent = "Host beheer: je kan opties ook bewerken of verwijderen.";
+
+          card.appendChild(hint);
+          card.appendChild(optList);
         }
 
         els.marketsWrap.appendChild(card);
@@ -533,22 +668,17 @@
 
     function renderSelections() {
       els.selectionTableWrap.innerHTML = "";
-
       if (!session) {
         els.selectionSummary.textContent = "Join een sessie.";
         return;
       }
-
       if (!selections.length) {
         els.selectionSummary.textContent = "Nog geen inzetten geplaatst.";
         return;
       }
 
       let totalAll = 0;
-      for (const s of selections) {
-        const st = Number(s.stake || 0);
-        if (Number.isFinite(st) && st > 0) totalAll += st;
-      }
+      for (const s of selections) totalAll += num(s.stake);
 
       els.selectionSummary.innerHTML =
         "<div><strong>Aantal inzetten:</strong> " + selections.length + "</div>" +
@@ -558,18 +688,19 @@
       table.className = "table";
       table.innerHTML =
         "<thead><tr>" +
-          "<th>Speler</th><th>Markt</th><th>Keuze</th><th>Inzet</th><th>Live odds in markt</th><th>Live kans</th>" +
+          "<th>Speler</th><th>Markt</th><th>Keuze</th><th>Inzet</th><th>Live odds</th><th>Live kans</th><th>Payout bij winst</th><th>Winst bij winst</th>" +
         "</tr></thead>";
 
       const tbody = document.createElement("tbody");
 
       for (const s of selections) {
-        const marketId = s.market_id;
-        const optionId = s.option_id;
-
-        const stats = getMarketStakeStats(marketId);
-        const stOnOpt = stats.optionStake.get(optionId) || 0;
+        const stats = getMarketStats(s.market_id);
+        const stOnOpt = num(stats.optionStake.get(s.option_id) || 0);
         const { prob, odds } = impliedOdds(stats.totalStake, stOnOpt, stats.nOptions);
+
+        const yourStake = num(s.stake);
+        const payout = (stOnOpt > 0) ? (yourStake / stOnOpt) * stats.totalStake : 0;
+        const profit = payout - yourStake;
 
         const pct = prob * 100;
         const pctTxt = Number.isFinite(pct) ? pct.toFixed(2) + "%" : "0.00%";
@@ -579,9 +710,11 @@
           "<td>" + escapeHtml(s.players?.name || "") + "</td>" +
           "<td>" + escapeHtml(s.markets?.title || "") + "</td>" +
           "<td>" + escapeHtml(s.market_options?.label || "") + "</td>" +
-          "<td>" + money(Number(s.stake || 0)) + "</td>" +
+          "<td>" + money(yourStake) + "</td>" +
           "<td class='mono'>" + fmtOdds(odds) + "</td>" +
-          "<td>" + pctTxt + "</td>";
+          "<td>" + pctTxt + "</td>" +
+          "<td>" + money(payout) + "</td>" +
+          "<td>" + money(profit) + "</td>";
 
         tbody.appendChild(tr);
       }
@@ -601,9 +734,11 @@
 
     async function joinFlow(code) {
       const joined = await joinSession(code);
-      session = { id: joined.session_id, code: joined.code };
+      session = { id: joined.session_id, code: joined.code, hostId: null };
       localStorage.setItem(STORAGE.sessionCode, session.code);
       setUrlCode(session.code);
+
+      await loadHostInfo();
       setupRealtime();
       await refreshAll();
       setStatus("Joined");
@@ -611,9 +746,11 @@
 
     async function createFlow() {
       const created = await createSession();
-      session = { id: created.session_id, code: created.code };
+      session = { id: created.session_id, code: created.code, hostId: null };
       localStorage.setItem(STORAGE.sessionCode, session.code);
       setUrlCode(session.code);
+
+      await loadHostInfo();
       setupRealtime();
       await refreshAll();
       setStatus("Sessie gemaakt");
@@ -622,16 +759,18 @@
     function leaveFlow() {
       teardownRealtime();
       session = null;
+      isHost = false;
       players = [];
       markets = [];
       optionsByMarket = new Map();
       selections = [];
       localStorage.removeItem(STORAGE.sessionCode);
+      els.roleBadge.textContent = "";
+      applyHostUiState();
       renderAll();
       setStatus("Left");
     }
 
-    // Events
     els.btnCreate.addEventListener("click", async () => {
       try { await createFlow(); }
       catch { setStatus("Create faalde"); }
@@ -646,22 +785,19 @@
 
     els.playerSelect.addEventListener("change", () => {
       localStorage.setItem(STORAGE.playerId, els.playerSelect.value || "");
-      renderPlayerSelect();
+      renderAll();
     });
 
     els.playerForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      if (!session) return;
+      if (!session || !isHost) return;
 
       const name = String(els.playerName.value || "").trim().replace(/\s+/g, " ");
       if (!name) return;
 
-      const user = (await supabase.auth.getUser()).data.user;
-
       const res = await supabase.from("players").insert({
         session_id: session.id,
-        name,
-        created_by: user.id
+        name
       });
 
       if (res.error) setStatus("Kon speler niet toevoegen");
@@ -670,19 +806,16 @@
 
     els.marketForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      if (!session) return;
+      if (!session || !isHost) return;
 
       const title = String(els.marketTitle.value || "").trim();
       const matchLabel = String(els.marketMatch.value || "").trim();
       if (!title) return;
 
-      const user = (await supabase.auth.getUser()).data.user;
-
       const res = await supabase.from("markets").insert({
         session_id: session.id,
         title,
-        match_label: matchLabel,
-        created_by: user.id
+        match_label: matchLabel
       });
 
       if (res.error) setStatus("Kon markt niet maken");
@@ -692,7 +825,7 @@
 
     els.optionForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      if (!session) return;
+      if (!session || !isHost) return;
 
       const marketId = els.marketPick.value;
       const label = String(els.optLabel.value || "").trim();
@@ -704,7 +837,6 @@
       const res = await supabase.from("market_options").insert({
         market_id: marketId,
         label,
-        odds: 1.01,
         sort
       });
 
@@ -712,11 +844,11 @@
       els.optLabel.value = "";
     });
 
-    // Boot
     async function boot() {
       try {
         const s = await ensureAnonAuth();
-        els.userId.textContent = s.user.id;
+        userId = s.user.id;
+        els.userId.textContent = userId;
 
         const savedPlayer = localStorage.getItem(STORAGE.playerId);
         if (savedPlayer) els.playerSelect.value = savedPlayer;
@@ -728,6 +860,7 @@
           els.joinCode.value = savedCode;
           await joinFlow(savedCode);
         } else {
+          applyHostUiState();
           renderAll();
         }
       } catch {
